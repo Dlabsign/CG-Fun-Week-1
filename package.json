@@ -1,0 +1,10 @@
+{
+  "name": "cg-fun-week-1",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CG Fun Week 1 - Roda Undian Hias Roti Tubuh Kristus",
+  "scripts": {
+    "start": "npx serve .",
+    "deploy": "npx vercel --prod"
+  }
+}

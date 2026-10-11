@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CG Fun Week 1 - Roda Undian Hias Roti Tubuh Kristus</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Pre-optimized Image Data for Instant Client-Side PNG Export -->
+  <script src="card_images.js"></script>
+
+  <!-- Google Fonts: Bangers (Comic Title) & Plus Jakarta Sans / Fredoka -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandYellow: '#F6C944',
+            brandYellowLight: '#FDDF78',
+            brandTeal: '#20B2AA',
+            brandTealDark: '#188F79',
+            brandTealLight: '#E6FAF8',
+            brandOrange: '#FF7A00',
+            brandOrangeLight: '#FFF0E5',
+            comicDark: '#1E1E24',
+          },
+          fontFamily: {
+            comic: ['Bangers', 'cursive'],
+            fredoka: ['Fredoka', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          boxShadow: {
+            'brutal': '4px 4px 0px #1E1E24',
+            'brutal-lg': '6px 6px 0px #1E1E24',
+            'brutal-xl': '8px 8px 0px #1E1E24',
+            'brutal-sm': '2px 2px 0px #1E1E24',
+            'brutal-pressed': '1px 1px 0px #1E1E24',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Comic Dot Pattern & Neobrutalism Details */
+    body {
+      background-color: #FDF8E2;
+      background-image: radial-gradient(#1E1E24 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
+      font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif;
+      color: #1E1E24;
+    }
+
+    .comic-border {
+      border: 3.5px solid #1E1E24;
+    }
+
+    .comic-border-sm {
+      border: 2.5px solid #1E1E24;
+    }
+
+    .comic-border-thick {
+      border: 5px solid #1E1E24;
+    }
+
+    /* Halftone Effect Background for Banners */
+    .halftone-teal {
+      background-color: #20B2AA;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.35) 20%, transparent 20%);
+      background-size: 14px 14px;
+    }
+
+    .halftone-yellow {
+      background-color: #F6C944;
+      background-image: radial-gradient(rgba(30, 30, 36, 0.15) 20%, transparent 20%);
+      background-size: 12px 12px;
+    }
+
+    .halftone-orange {
+      background-color: #FF7A00;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.3) 20%, transparent 20%);
+      background-size: 14px 14px;
+    }
+
+    /* Pop Modal In Animation */
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.65) rotate(-4deg);
+      }
+
+      70% {
+        opacity: 1;
+        transform: scale(1.04) rotate(1deg);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+    }
+
+    .pop-in-modal {
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Neobrutalist Button Active State */
+    .comic-btn {
+      transition: all 0.12s ease;
+    }
+
+    .comic-btn:hover:not(:disabled) {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #1E1E24;
+    }
+
+    .comic-btn:active:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #1E1E24;
+    }
+
+    .comic-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+
+    /* Wheel Canvas Styles */
+    #wheelCanvas {
+      transform-origin: center center;
+      transition: none;
+      will-change: transform;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #FDF8E2;
+      border-left: 2px solid #1E1E24;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #20B2AA;
+      border: 2px solid #1E1E24;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #188F79;
+    }
+
+    /* Fluid Responsive Sizing for Roulette Wheel and History */
+    .wheel-wrapper {
+      width: min(500px, 90vw, 65vh);
+      height: min(500px, 90vw, 65vh);
+      max-width: 100%;
+    }
+
+    @media (max-height: 850px) {
+      .hero-section {
+        margin-bottom: 0.25rem !important;
+      }
+
+      .hero-title {
+        font-size: 2rem !important;
+        line-height: 1.1 !important;
+      }
+
+      #historyListContainer {
+        max-height: 440px !important;
+      }
+    }
+
+    @media (max-height: 720px) {
+      body {
+        padding-bottom: 0.5rem !important;
+      }
+
+      header {
+        padding-top: 0.25rem !important;
+        padding-bottom: 0.25rem !important;
+      }
+
+      .hero-section {
+        margin-bottom: 0.15rem !important;
+      }
+
+      .hero-title {
+        font-size: 1.6rem !important;
+      }
+
+      #historySection {
+        padding: 0.75rem !important;
+      }
+
+      #historyListContainer {
+        max-height: 360px !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-16 text-[#1E1E24]">
+
+  <!-- Top Announcement Bar / Audio & Catalog Bar -->
+  <header class="bg-brandOrange border-b-4 border-[#1E1E24] px-4 py-2 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span
+          class="bg-brandYellow text-[#1E1E24] font-black text-xs px-2.5 py-0.5 rounded-full comic-border-sm shadow-brutal-sm uppercase tracking-wide">
+          🎉 CG WEEK 1
+        </span>
+        <span class="font-bold text-white text-xs sm:text-sm drop-shadow">
+          Aktivitas Kreatif: Hias Roti "Tubuh Kristus"
+        </span>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-bold">
+        <!-- Sound Effect Toggle -->
+        <button id="soundToggleBtn" onclick="toggleSound()"
+          class="bg-white hover:bg-brandYellow text-[#1E1E24] px-2.5 py-1 rounded-md comic-border-sm shadow-brutal-sm flex items-center gap-1 transition">
+          <span id="soundIcon">🔊</span>
+          <span id="soundText" class="hidden sm:inline">Suara: ON</span>
+        </button>
+
+        <!-- View All Catalog Modal Trigger -->
+        <button onclick="openCatalogModal()"
+          class="bg-brandTeal hover:bg-brandTealDark text-white px-2.5 py-1 rounded-md comic-border-sm shadow-brutal-sm flex items-center gap-1 transition">
+          <span>📖</span>
+          <span>KATALOG</span>
+        </button>
+
+        <!-- Reset Pool Button -->
+        <button onclick="confirmResetGacha()"
+          class="bg-white hover:bg-red-50 text-red-600 px-2.5 py-1 rounded-md comic-border-sm shadow-brutal-sm flex items-center gap-1 transition"
+          title="Reset undian">
+          <span>🔄</span>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container: 2-Kolom Responsive Layout -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-3 sm:pt-4 pb-8">
+
+    <!-- HERO HEADER: POP ART / COMIC STYLE (COMPACT & RESPONSIVE) -->
+    <section class="hero-section text-center mb-1 sm:mb-2 relative">
+      <h1
+        class="hero-title font-comic text-2xl sm:text-4xl md:text-5xl text-[#1E1E24] tracking-wider uppercase drop-shadow-[2px_2px_0px_#F6C944] leading-tight">
+        CG Fun week 1
+      </h1>
+    </section>
+
+    <!-- 2 KOLOM: KIRI RODA UNDIAN, KANAN RIWAYAT UNDIAN -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-center lg:items-start">
+
+      <!-- KOLOM KIRI: RODA UNDIAN (HANYA RODA & PENUNJUK SESUAI GAMBAR PENGGUNA) -->
+      <section class="lg:col-span-7 flex flex-col items-center justify-center py-2" id="wheelMachineBox">
+
+        <!-- Chunky Comic Pointer (Indicator at 12 o'clock) -->
+        <div id="wheelPointer" class="relative z-20 mb-[-14px] pointer-events-none transition-transform duration-75">
+          <svg width="44" height="48" viewBox="0 0 44 48" fill="none" class="filter drop-shadow-[2px_3px_0px_#1E1E24]">
+            <path d="M22 46L6 10C5 7 7 4 10 4H34C37 4 39 7 38 10L22 46Z" fill="#FF7A00" stroke="#1E1E24"
+              stroke-width="4.5" stroke-linejoin="round" />
+            <circle cx="22" cy="15" r="5" fill="#F6C944" stroke="#1E1E24" stroke-width="2.5" />
+          </svg>
+        </div>
+
+        <!-- Wheel Canvas Wrapper (Besar, Bebas, Full Display) -->
+        <div class="wheel-wrapper relative max-w-full flex items-center justify-center">
+          <canvas id="wheelCanvas" width="800" height="800"
+            class="w-full h-full rounded-full cursor-pointer drop-shadow-[5px_8px_0px_#1E1E24] hover:scale-[1.015] active:scale-[0.99] transition-transform"
+            onclick="spinWheel()" title="Klik roda untuk memutar undian!"></canvas>
+        </div>
+
+        <!-- Current Live Status Badge / Tombol Putar (Sesuai Gambar Pengguna) -->
+        <button id="wheelStatusBadge" onclick="spinWheel()"
+          class="comic-btn mt-3.5 sm:mt-4 bg-white hover:bg-yellow-50 text-[#1E1E24] border-[3.5px] border-[#1E1E24] px-7 sm:px-9 py-2.5 sm:py-3 rounded-full shadow-brutal text-center max-w-md transition-all flex items-center justify-center cursor-pointer select-none"
+          title="Klik untuk memutar roda undian!">
+          <span id="wheelStatusText"
+            class="font-comic italic text-base sm:text-lg md:text-xl text-[#1E1E24] tracking-wider uppercase">
+            SIAP DIUNDI – TEKAN PUTAR!
+          </span>
+        </button>
+
+        <!-- Hidden elements for JavaScript state compatibility -->
+        <button id="spinBtn" onclick="spinWheel()" class="hidden"></button>
+        <input type="checkbox" id="noDuplicateCheckbox" checked class="hidden" onchange="onDuplicateCheckboxChanged()">
+        <span id="remainingBadge" class="hidden">10 / 10 Kartu</span>
+
+      </section>
+
+      <!-- KOLOM KANAN: RIWAYAT UNDIAN -->
+      <section class="lg:col-span-5 bg-white comic-border rounded-3xl p-3.5 sm:p-5 shadow-brutal-lg flex flex-col"
+        id="historySection">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b-4 border-[#1E1E24] pb-2.5 mb-3">
+          <div class="flex items-center gap-2">
+            <h2 class="font-comic text-xl sm:text-2xl text-[#1E1E24] tracking-wide">
+              Riwayat
+            </h2>
+            <span id="historyCountBadge"
+              class="bg-brandOrange text-white font-comic text-xs px-2 py-0.5 rounded-full comic-border-sm shadow-brutal-sm">
+              0
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button id="copySummaryBtn" onclick="copyHistorySummary()"
+              class="comic-btn text-xs font-black bg-brandYellow hover:bg-yellow-300 text-[#1E1E24] px-2.5 py-1.5 rounded-xl comic-border-sm shadow-brutal-sm flex items-center gap-1"
+              title="Salin rekap hasil ke clipboard">
+              <span>📋</span> Salin
+            </button>
+            <button id="clearHistoryBtn" onclick="confirmClearHistory()"
+              class="comic-btn text-xs font-black bg-white hover:bg-red-50 text-red-600 px-2.5 py-1.5 rounded-xl comic-border-sm shadow-brutal-sm flex items-center gap-1"
+              title="Kosongkan seluruh riwayat undian">
+              <span>🗑️</span> Hapus
+            </button>
+          </div>
+        </div>
+
+        <!-- History List Container -->
+        <div id="historyListContainer"
+          class="space-y-2.5 max-h-[460px] lg:max-h-[480px] xl:max-h-[520px] overflow-y-auto pr-1">
+          <div
+            class="text-center py-8 text-gray-500 font-bold bg-[#FAF8EF] rounded-2xl comic-border-sm border-dashed p-4">
+            <div class="text-3xl mb-1.5">🎡</div>
+            <p class="font-comic text-base text-gray-700">Belum ada kartu yang diundi</p>
+            <p class="text-xs text-gray-500 mt-1">Tekan tombol <span
+                class="text-brandOrange font-black underline">PUTAR</span> di sebelah kiri untuk mengundi!</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: KARTU HASIL UNDIAN (REVEAL CARD MODAL) -->
+  <!-- ======================================================== -->
+  <div id="resultModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-black/70 backdrop-blur-sm">
+    <div
+      class="relative w-full max-w-xl my-8 bg-brandYellow comic-border-thick rounded-3xl p-5 sm:p-6 shadow-brutal-xl pop-in-modal max-h-[92vh] flex flex-col overflow-hidden">
+
+      <!-- Top Decorative Ribbon / Banner -->
+      <div class="flex items-center justify-between border-b-4 border-[#1E1E24] pb-3 mb-4">
+        <div class="flex items-center gap-2">
+          <span
+            class="bg-brandOrange text-white font-comic text-lg px-3 py-0.5 rounded-xl comic-border-sm shadow-brutal-sm tracking-wide">
+            ★ HASIL UNDIAN ★
+          </span>
+          <span id="modalParticipantLabel"
+            class="text-xs font-black bg-white px-2.5 py-1 rounded-full comic-border-sm shadow-brutal-sm text-gray-700 hidden">
+            <!-- Participant Name -->
+          </span>
+        </div>
+        <button onclick="closeResultModal()"
+          class="comic-btn w-9 h-9 rounded-full bg-white hover:bg-red-500 hover:text-white font-black text-lg comic-border-sm shadow-brutal-sm flex items-center justify-center leading-none transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Scrollable Card Content -->
+      <div class="overflow-y-auto pr-1 space-y-4 flex-1">
+
+        <!-- CARD HEADER: Number, Emoji, Body Part, Theme -->
+        <div class="bg-white comic-border rounded-2xl p-4 shadow-brutal text-center relative overflow-hidden">
+          <div
+            class="absolute -right-6 -top-6 w-20 h-20 bg-brandYellow rounded-full comic-border-sm opacity-60 pointer-events-none">
+          </div>
+
+          <div
+            class="inline-flex items-center gap-1.5 bg-brandTeal text-white font-black text-xs px-3 py-1 rounded-full comic-border-sm mb-2 shadow-brutal-sm">
+            <span id="modalCardNumber">KARTU #1</span>
+          </div>
+
+          <div class="flex items-center justify-center gap-2">
+            <span id="modalCardEmoji" class="text-4xl sm:text-5xl">👂</span>
+            <h2 id="modalCardNama" class="font-comic text-3xl sm:text-5xl text-[#1E1E24] tracking-wide">
+              Telinga
+            </h2>
+          </div>
+
+          <div class="mt-1">
+            <span id="modalCardTema"
+              class="inline-block bg-brandOrange text-white font-bold text-sm sm:text-base px-3 py-1 rounded-xl comic-border-sm shadow-brutal-sm">
+              "Mendengar Firman & Sesama"
+            </span>
+          </div>
+        </div>
+
+        <!-- IMAGE OF BREAD DECORATION -->
+        <div class="bg-white comic-border rounded-2xl p-3 shadow-brutal">
+          <div
+            class="relative bg-amber-50 rounded-xl comic-border-sm overflow-hidden flex items-center justify-center max-h-72">
+            <img id="modalCardImage" src="" alt="Hias Roti"
+              class="w-full h-56 sm:h-64 object-cover sm:object-contain bg-amber-50 transition-transform duration-300 hover:scale-105"
+              onerror="handleImageFallback(this)">
+            <div id="modalImageFallback" class="hidden flex-col items-center justify-center p-8 text-center">
+              <span class="text-6xl mb-2">🍞</span>
+              <p class="font-comic text-xl text-gray-700">Foto Hias Roti</p>
+              <p class="text-xs text-gray-500 font-semibold">Ikuti petunjuk hias di bawah!</p>
+            </div>
+          </div>
+          <p class="text-[11px] font-bold text-center text-gray-500 mt-2">
+            📸 Contoh Inspirasi Hias Roti CG Fun Week 1
+          </p>
+        </div>
+
+        <!-- MAKNA ROHANI -->
+        <div class="bg-brandTeal text-white comic-border rounded-2xl p-4 shadow-brutal">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="text-xl">💡</span>
+            <h4 class="font-comic text-lg tracking-wide text-brandYellow">
+              MAKNA ROHANI:
+            </h4>
+          </div>
+          <p id="modalCardMakna" class="text-xs sm:text-sm font-semibold leading-relaxed">
+            Anggota tubuh yang peka mendengar kebenaran firman Tuhan...
+          </p>
+        </div>
+
+        <!-- AYAT FIRMAN -->
+        <div class="bg-[#FFF9D2] comic-border rounded-2xl p-4 shadow-brutal border-l-8 border-l-brandOrange">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="text-xl">📖</span>
+            <h4 class="font-comic text-lg tracking-wide text-brandOrange">
+              AYAT FIRMAN:
+            </h4>
+          </div>
+          <p id="modalCardAyat" class="text-xs sm:text-sm font-bold text-gray-800 italic leading-relaxed">
+            Roma 10:17 - Jadi, iman timbul dari pendengaran...
+          </p>
+        </div>
+
+        <!-- PETUNJUK HIAS ROTI -->
+        <div class="bg-brandOrangeLight comic-border rounded-2xl p-4 shadow-brutal">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">🎨</span>
+            <h4 class="font-comic text-lg tracking-wide text-brandOrange">
+              PETUNJUK HIAS ROTI:
+            </h4>
+          </div>
+          <p id="modalCardHias"
+            class="text-xs sm:text-sm font-semibold text-gray-800 leading-relaxed bg-white p-3 rounded-xl comic-border-sm">
+            Oles roti dengan margarin. Buat lengkungan daun telinga memakai patahan stik Pocky...
+          </p>
+        </div>
+
+      </div>
+
+      <!-- FOOTER BUTTONS: UNDUH KARTU, TUTUP & PUTAR LAGI -->
+      <div class="pt-4 border-t-3 border-[#1E1E24] mt-2 flex flex-col sm:flex-row gap-2.5">
+        <!-- Download Card PNG Button -->
+        <button id="modalDownloadBtn" onclick="downloadCurrentCard()"
+          class="comic-btn flex-1 bg-brandOrange hover:bg-[#FF6A00] text-white font-comic text-lg sm:text-xl py-3 rounded-xl comic-border shadow-brutal tracking-wide flex items-center justify-center gap-2">
+          <span>📥</span> Unduh Kartu (PNG)
+        </button>
+
+        <button id="modalPullAgainBtn" onclick="closeResultModal(); setTimeout(spinWheel, 300);"
+          class="comic-btn flex-1 bg-brandTeal hover:bg-brandTealDark text-white font-comic text-lg sm:text-xl py-3 rounded-xl comic-border shadow-brutal tracking-wide flex items-center justify-center gap-2">
+          <span>🎡</span> Putar Lagi!
+        </button>
+
+        <button onclick="closeResultModal()"
+          class="comic-btn sm:w-28 bg-white hover:bg-gray-100 text-[#1E1E24] font-black text-sm py-3 rounded-xl comic-border shadow-brutal">
+          ✅ Tutup
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: KATALOG LENGKAP 10 KARTU (CHEATSHEET PIC) -->
+  <!-- ======================================================== -->
+  <div id="catalogModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-black/70 backdrop-blur-sm">
+    <div
+      class="relative w-full max-w-4xl my-6 bg-[#FFFBEA] comic-border-thick rounded-3xl p-5 sm:p-6 shadow-brutal-xl pop-in-modal max-h-[92vh] flex flex-col overflow-hidden">
+
+      <!-- Catalog Header -->
+      <div class="flex items-center justify-between border-b-4 border-[#1E1E24] pb-3 mb-4">
+        <h2 class="font-comic text-2xl sm:text-3xl text-[#1E1E24] tracking-wide">
+          KATALOG
+        </h2>
+        <button onclick="closeCatalogModal()"
+          class="comic-btn w-9 h-9 rounded-full bg-white hover:bg-red-500 hover:text-white font-black text-lg comic-border-sm shadow-brutal-sm flex items-center justify-center leading-none transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Catalog Grid List -->
+      <div id="catalogList" class="overflow-y-auto pr-1 grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+        <!-- Rendered by renderCatalog() -->
+      </div>
+
+      <!-- Catalog Footer -->
+      <div class="pt-4 border-t-3 border-[#1E1E24] mt-3 flex justify-end">
+        <button onclick="closeCatalogModal()"
+          class="comic-btn bg-brandTeal hover:bg-brandTealDark text-white font-black px-6 py-2.5 rounded-xl comic-border shadow-brutal text-sm">
+          Kembali ke Undian
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT LOGIC -->
+  <!-- ======================================================== -->
+  <script>
+    // 10 DATA ITEM UNDIAN SESUAI SPESIFIKASI
+    const GACHA_ITEMS = [
+      {
+        id: 1,
+        nama: "Telinga",
+        emoji: "👂",
+        image: "Gambar/Telinga.jpg",
+        tema: "Mendengar Firman & Sesama",
+        ayat: "Roma 10:17 - Jadi, iman timbul dari pendengaran, dan pendengaran oleh firman Kristus.",
+        makna: "Anggota tubuh yang peka mendengar kebenaran firman Tuhan dan setia mendengarkan cerita serta pergumulan teman di CG.",
+        hias: "Oles roti dengan margarin. Buat lengkungan daun telinga memakai patahan stik Pocky, lalu taburkan butiran permen warna-warni di dalamnya lambang kabar baik."
+      },
+      {
+        id: 2,
+        nama: "Mata",
+        emoji: "👁️",
+        image: "Gambar/Mata.jpg",
+        tema: "Memandang dengan Kasih",
+        ayat: "1 Yohanes 4:10–11 - Inilah kasih itu: Bukan kita yang telah mengasihi Allah, tetapi Allah yang telah mengasihi kita dan yang telah mengutus Anak-Nya sebagai pendamaian bagi dosa-dosa kita. Saudara-saudaraku yang kekasih, jikalau Allah sedemikian mengasihi kita, maka haruslah kita juga saling mengasihi.",
+        makna: "Memandang orang lain bukan dengan menghakimi, melainkan dengan mata belas kasihan Kristus yang peduli pada sesama.",
+        hias: "Oles tipis margarin. Buat dua mata ramah dari permen bulat dengan choco chips di tengahnya sebagai manik mata, lalu taburi meses melengkung di atasnya sebagai alis senyum."
+      },
+      {
+        id: 3,
+        nama: "Mulut",
+        emoji: "👄",
+        image: "Gambar/Senyuman.jpg",
+        tema: "Memberitakan Kabar Baik",
+        ayat: "Roma 10:9–10 - Sebab jika kamu mengaku dengan mulutmu, bahwa Yesus adalah Tuhan, dan percaya dalam hatimu, bahwa Allah telah membangkitkan Dia dari antara orang mati, maka kamu akan diselamatkan. Karena dengan hati orang percaya dan dibenarkan, dan dengan mulut orang mengaku dan diselamatkan.",
+        makna: "Perkataan yang tidak dipakai untuk hal kasar/sia-sia, melainkan untuk bersaksi, memuji Tuhan, dan membangun teman.",
+        hias: "Buat garis senyum lebar melengkung memakai stik Pocky di atas roti. Hias bagian bawahnya dengan taburan permen warna-warni tanda perkataan yang memberkati."
+      },
+      {
+        id: 4,
+        nama: "Hati",
+        emoji: "❤️",
+        image: "Gambar/Hati.jpg",
+        tema: "Kasih Kristus yang Lembut",
+        ayat: "Yohanes 3:16 - Karena begitu besar kasih Allah akan dunia ini, sehingga Ia telah mengaruniakan Anak-Nya yang tunggal, supaya setiap orang yang percaya kepada-Nya tidak binasa, melainkan beroleh hidup yang kekal.",
+        makna: "Pusat hidup tubuh Kristus yang lembut menerima anugerah cuma-cuma dan rindu menjangkau jiwa baru.",
+        hias: "Oles selai coklat tipis. Susun butiran choco chips membentuk bingkai hati besar, lalu penuhi bagian dalam hati dengan taburan permen warna-warni."
+      },
+      {
+        id: 5,
+        nama: "Tangan Terbuka",
+        emoji: "👐",
+        image: "Gambar/Tangan Terbuka.jpg",
+        tema: "Melayani & Menyambut",
+        ayat: "Galatia 6:10 - Karena itu, selama masih ada kesempatan bagi kita, marilah kita berbuat baik kepada semua orang, tetapi terutama kepada kawan-kawan kita seiman.",
+        makna: "Tangan yang tidak pelit atau menutup diri, melainkan terbuka menyambut orang baru dan siap melayani.",
+        hias: "Oles margarin. Susun 5 potongan kecil Pocky membentuk jari tangan terbuka, lalu letakkan permen warna-warni di telapaknya tanda rela memberi."
+      },
+      {
+        id: 6,
+        nama: "Kaki",
+        emoji: "👣",
+        image: "Gambar/Kaki Menuju Salib.jpg",
+        tema: "Membawa Kabar Damai",
+        ayat: "Matius 28:19-20 - Karena itu pergilah, jadikanlah semua bangsa murid-Ku dan baptislah mereka dalam nama Bapa dan Anak dan Roh Kudus, dan ajarlah mereka melakukan segala sesuatu yang telah Kuperintahkan kepadamu. Dan ketahuilah, Aku menyertai kamu senantiasa sampai kepada akhir zaman.”",
+        makna: "Langkah kaki yang setia melangkah membawa damai dan mengajak teman datang ke persekutuan keselamatan.",
+        hias: "Buat jejak langkah kaki dari titik-titik choco chips lurus menuju tanda salib mini dari silangan dua stik Pocky."
+      },
+      {
+        id: 7,
+        nama: "Pundak",
+        emoji: "🤝",
+        image: "Gambar/Pundak (Saling Menopang).jpg",
+        tema: "Saling Menopang di CG",
+        ayat: "Galatia 6:2 - Bertolong-tolonganlah menanggung bebanmu! Demikianlah kamu memenuhi hukum Kristus.",
+        makna: "Anggota tubuh yang tidak membiarkan temannya menanggung beban sendirian, melainkan saling menopang dan mendoakan.",
+        hias: "Pasang dua stik Pocky berjajar mendatar lambang pundak. Hubungkan keduanya dengan taburan meses dan permen warna-warni tanda saling topang."
+      },
+      {
+        id: 8,
+        nama: "Kepala / Mahkota",
+        emoji: "👑",
+        image: "Gambar/Mahkota.jpg",
+        tema: "Kristus Sang Pemimpin",
+        ayat: "Kolose 1:18 - Ialah kepala tubuh, yaitu jemaat. Ialah yang sulung, yang pertama bangkit dari antara orang mati, sehingga Ia yang lebih utama dalam segala sesuatu.",
+        makna: "Menyerahkan jalan pikiran dan hidup di bawah pimpinan Yesus sebagai Kepala tubuh yang berkuasa.",
+        hias: "Oles margarin. Susun patahan Pocky membentuk pola mahkota segitiga runcing, lalu pasang choco chips dan permen di ujung runcing mahkota."
+      },
+      {
+        id: 9,
+        nama: "Lingkaran Tubuh",
+        emoji: "🫂",
+        image: "Gambar/Lingkaran Tubuh.jpg",
+        tema: "Komunitas yang Sehati",
+        ayat: "Kisah Para Rasul 2:46–47 - Dengan bertekun dan dengan sehati mereka berkumpul tiap-tiap hari dalam Bait Allah. Mereka memecahkan roti di rumah masing-masing secara bergilir dan makan bersama-sama dengan gembira dan dengan tulus hati, sambil memuji Allah. Dan mereka disukai semua orang. Dan tiap-tiap hari Tuhan menambah jumlah mereka dengan orang yang diselamatkan.",
+        makna: "Kita tidak dirancang hidup sendirian, melainkan menyatu erat dan saling melengkapi dalam satu keluarga rohani.",
+        hias: "Oles selai coklat merata. Susun permen warna-warni melingkar di tepi roti seperti orang bergandengan, lalu letakkan salib Pocky mini di pusatnya."
+      },
+      {
+        id: 10,
+        nama: "Ranting Berbuah",
+        emoji: "🍇",
+        image: "Gambar/Ranting.jpg",
+        tema: "Menghasilkan Jiwa Baru",
+        ayat: "Amsal 11:30 - Hasil orang benar adalah pohon kehidupan, dan siapa bijak, mengambil hati orang.",
+        makna: "Tubuh Kristus yang berakar kuat dan menghasilkan buah sukacita serta memenangkan jiwa bagi Tuhan.",
+        hias: "Buat batang ranting memakai potongan Pocky di atas roti. Beri rimbunan daun dari meses coklat, lalu tempel permen warna-warni sebagai buah-buah manis."
+      }
+    ];
+
+    // SLICE COLOR PALETTE FOR THE WHEEL
+    const SLICE_COLORS = [
+      '#20B2AA', // Teal
+      '#F6C944', // Yellow
+      '#FF7A00', // Orange
+      '#38BDF8', // Sky Blue
+      '#FBBF24', // Amber
+      '#FB923C', // Warm Orange
+      '#2DD4BF', // Mint Teal
+      '#FDE047', // Light Yellow
+      '#F97316', // Deep Orange
+      '#14B8A6'  // Deep Teal
+    ];
+
+    // STATE MANAGEMENT
+    let availablePool = [];
+    let drawnHistory = [];
+    let isSpinning = false;
+    let soundEnabled = true;
+    let audioCtx = null;
+    let currentWheelRotation = 0; // Cumulative degrees
+    let currentlyViewedItem = null;
+    let currentlyViewedParticipant = null;
+
+    // LOCAL STORAGE KEYS
+    const STORAGE_KEY_HISTORY = 'cg_fun_wheel_history';
+    const STORAGE_KEY_POOL = 'cg_fun_wheel_pool';
+
+    // INITIALIZATION ON PAGE LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      drawWheel();
+      renderHistory();
+      updateRemainingIndicator();
+      renderCatalog();
+    });
+
+    // LOAD SAVED STATE OR RESET
+    function loadState() {
+      try {
+        const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY);
+        if (savedHistory) {
+          drawnHistory = JSON.parse(savedHistory);
+        }
+
+        const savedPool = localStorage.getItem(STORAGE_KEY_POOL);
+        if (savedPool) {
+          availablePool = JSON.parse(savedPool);
+        } else {
+          resetPool(false);
+        }
+      } catch (e) {
+        console.error("Gagal membaca localStorage:", e);
+        resetPool(false);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(drawnHistory));
+        localStorage.setItem(STORAGE_KEY_POOL, JSON.stringify(availablePool));
+      } catch (e) {
+        console.error("Gagal menyimpan ke localStorage:", e);
+      }
+    }
+
+    function resetPool(save = true) {
+      availablePool = GACHA_ITEMS.map(item => item.id);
+      if (save) saveState();
+    }
+
+    // CHECKBOX TOGGLE HELPER
+    function toggleDuplicateCheckbox(event) {
+      if (event.target.tagName !== 'INPUT') {
+        const cb = document.getElementById('noDuplicateCheckbox');
+        cb.checked = !cb.checked;
+        onDuplicateCheckboxChanged();
+      }
+    }
+
+    function onDuplicateCheckboxChanged() {
+      updateRemainingIndicator();
+      drawWheel();
+    }
+
+    // SOUND SYNTHESIS USING WEB AUDIO API
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playBeep(freq, type = 'square', duration = 0.05, vol = 0.15) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn("Audio error:", e);
+      }
+    }
+
+    function playFanfare() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99]; // C4, E4, G4, C5, E5, G5
+      notes.forEach((freq, idx) => {
+        setTimeout(() => {
+          playBeep(freq, 'triangle', 0.25, 0.2);
+        }, idx * 70);
+      });
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      const text = document.getElementById('soundText');
+      if (soundEnabled) {
+        icon.textContent = '🔊';
+        text.textContent = 'Suara: ON';
+        playBeep(440, 'sine', 0.1, 0.2);
+      } else {
+        icon.textContent = '🔇';
+        text.textContent = 'Suara: OFF';
+      }
+    }
+
+    // ========================================================
+    // WHEEL OF FORTUNE DRAWING LOGIC (HTML5 CANVAS)
+    // ========================================================
+    function drawWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width; // 800
+      const center = size / 2; // 400
+      const outerRadius = 380;
+      const wheelRadius = 345;
+      const hubRadius = 68;
+      const numSlices = GACHA_ITEMS.length;
+      const sliceAngle = (2 * Math.PI) / numSlices;
+      const noDuplicate = document.getElementById('noDuplicateCheckbox').checked;
+
+      ctx.clearRect(0, 0, size, size);
+
+      // 1. OUTER CARNIVAL RIM
+      ctx.beginPath();
+      ctx.arc(center, center, outerRadius, 0, 2 * Math.PI);
+      ctx.fillStyle = '#FFF8DB';
+      ctx.fill();
+      ctx.lineWidth = 9;
+      ctx.strokeStyle = '#1E1E24';
+      ctx.stroke();
+
+      // 2. CARNIVAL BULBS / LIGHTS
+      const numBulbs = 20;
+      for (let b = 0; b < numBulbs; b++) {
+        const bAngle = (b * 2 * Math.PI) / numBulbs;
+        const bx = center + Math.cos(bAngle) * 363;
+        const by = center + Math.sin(bAngle) * 363;
+        ctx.beginPath();
+        ctx.arc(bx, by, 7.5, 0, 2 * Math.PI);
+        ctx.fillStyle = (b % 2 === 0) ? '#FF7A00' : '#F6C944';
+        if (b % 4 === 0) ctx.fillStyle = '#20B2AA';
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+      }
+
+      // 3. DRAW 10 WEDGES
+      // Slice 0 starts at -PI/2 (12 o'clock)
+      for (let i = 0; i < numSlices; i++) {
+        const item = GACHA_ITEMS[i];
+        const isAvailable = availablePool.includes(item.id);
+        const startAngle = -Math.PI / 2 + i * sliceAngle;
+        const endAngle = startAngle + sliceAngle;
+        const midAngle = startAngle + sliceAngle / 2;
+
+        // Slice arc fill
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, wheelRadius, startAngle, endAngle);
+        ctx.closePath();
+
+        let fillColor = SLICE_COLORS[i % SLICE_COLORS.length];
+        if (noDuplicate && !isAvailable) {
+          fillColor = '#D1D5DB'; // Muted gray if taken
+        }
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+
+        // Thick black comic dividing line
+        ctx.lineWidth = 4.5;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+
+        // Draw Content in Slice (Emoji & Name)
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(midAngle);
+
+        // Shorten long labels for clean wheel display
+        let label = item.nama;
+        if (label === 'Kepala / Mahkota') label = 'Mahkota';
+        if (label === 'Lingkaran Tubuh') label = 'Lingkaran';
+        if (label === 'Ranting Berbuah') label = 'Ranting';
+        if (label === 'Tangan Terbuka') label = 'Tangan';
+
+        // Calculate maximum readable font size (fully optimized for text-only wheel)
+        let fontSize = 38;
+        if (label.length >= 9) fontSize = 34;       // Lingkaran
+        else if (label.length <= 4) fontSize = 42;  // Hati, Mata, Kaki
+        else if (label.length <= 6) fontSize = 40;  // Mulut, Tangan, Pundak
+
+        // Center text across the full radial length of the slice (no icons)
+        const textX = wheelRadius * 0.58;
+        ctx.font = `900 ${fontSize}px "Fredoka", "Plus Jakarta Sans", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // White outline for crisp comic contrast on every slice color
+        ctx.lineWidth = 4.5;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.strokeText(label, textX, 0);
+
+        ctx.fillStyle = (noDuplicate && !isAvailable) ? '#6B7280' : '#1E1E24';
+        ctx.fillText(label, textX, 0);
+
+        // Strikethrough line if already drawn
+        if (noDuplicate && !isAvailable) {
+          ctx.beginPath();
+          ctx.moveTo(wheelRadius * 0.28, 0);
+          ctx.lineTo(wheelRadius * 0.90, 0);
+          ctx.strokeStyle = '#DC2626';
+          ctx.lineWidth = 4;
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      // 4. CENTER HUB (THE AXLE)
+      // Outer hub ring
+      ctx.beginPath();
+      ctx.arc(center, center, hubRadius, 0, 2 * Math.PI);
+      ctx.fillStyle = '#F6C944';
+      ctx.fill();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = '#1E1E24';
+      ctx.stroke();
+
+      // Inner white hub
+      ctx.beginPath();
+      ctx.arc(center, center, hubRadius - 16, 0, 2 * Math.PI);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#1E1E24';
+      ctx.stroke();
+
+      // Hub Center Text (Clean Comic Branding, No Icon)
+      ctx.font = 'bold 24px "Bangers", cursive, sans-serif';
+      ctx.fillStyle = '#1E1E24';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('CG FUN', center, center);
+    }
+
+    // ========================================================
+    // WHEEL SPINNING ANIMATION (QUARTIC EASE-OUT PHYSICS)
+    // ========================================================
+    function spinWheel() {
+      if (isSpinning) return;
+
+      const noDuplicate = document.getElementById('noDuplicateCheckbox').checked;
+      let eligiblePoolIds = noDuplicate ? [...availablePool] : GACHA_ITEMS.map(i => i.id);
+
+      if (eligiblePoolIds.length === 0) {
+        alert("Semua 10 kartu sudah ditarik! Silakan klik 'Reset Undian' untuk mengulang kembali.");
+        return;
+      }
+
+      isSpinning = true;
+      initAudio();
+
+      const spinBtn = document.getElementById('spinBtn');
+      const statusBadge = document.getElementById('wheelStatusBadge');
+      const statusText = document.getElementById('wheelStatusText');
+      const wheelCanvas = document.getElementById('wheelCanvas');
+      const pointer = document.getElementById('wheelPointer');
+
+      spinBtn.disabled = true;
+      statusBadge.className = "comic-btn mt-3.5 sm:mt-4 bg-[#FF7A00] text-white border-[3.5px] border-[#1E1E24] px-7 sm:px-9 py-2.5 sm:py-3 rounded-full shadow-brutal text-center max-w-md transition-all flex items-center justify-center cursor-wait animate-pulse";
+      statusText.className = "font-comic italic text-base sm:text-lg md:text-xl text-white tracking-wider uppercase";
+      statusText.textContent = "MEMUTAR...";
+
+      // 1. Pick winner item from eligible pool
+      const winnerId = eligiblePoolIds[Math.floor(Math.random() * eligiblePoolIds.length)];
+      const winnerIndex = GACHA_ITEMS.findIndex(i => i.id === winnerId);
+      const winnerItem = GACHA_ITEMS[winnerIndex];
+
+      // 2. Calculate exact angle needed so winnerIndex lands precisely under top pointer (12 o'clock)
+      const numSlices = GACHA_ITEMS.length;
+      const sliceAngle = 360 / numSlices; // 36 degrees
+      // Center of slice i: -90 + (i + 0.5) * 36 deg.
+      // Offset needed: (360 - (i + 0.5) * 36) % 360
+      const sliceTargetOffset = (360 - (winnerIndex + 0.5) * sliceAngle) % 360;
+
+      // Organic organic jitter within the slice (+/- 8 deg, safely inside slice boundaries)
+      const jitter = (Math.random() - 0.5) * 16;
+      const targetMod = (sliceTargetOffset + jitter + 360) % 360;
+
+      // 3. Compute target cumulative angle with 6 to 8 full revolutions
+      const fullTurns = 6 + Math.floor(Math.random() * 3);
+      const currentMod = ((currentWheelRotation % 360) + 360) % 360;
+      let delta = targetMod - currentMod;
+      if (delta <= 0) delta += 360;
+      const totalRotationNeeded = fullTurns * 360 + delta;
+      const targetRotation = currentWheelRotation + totalRotationNeeded;
+
+      // 4. Animation loop with Quartic Ease-Out
+      const duration = 4800; // 4.8 seconds
+      const startTime = performance.now();
+      const startRotation = currentWheelRotation;
+      let lastPeg = Math.floor(startRotation / sliceAngle);
+
+      function easeOutQuart(t) {
+        return 1 - Math.pow(1 - t, 4);
+      }
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeOutQuart(progress);
+        const currentAngle = startRotation + totalRotationNeeded * eased;
+
+        wheelCanvas.style.transform = `rotate(${currentAngle}deg)`;
+
+        // Mechanical Click / Tick on Each Slice Boundary + Pointer Kick
+        const currentPeg = Math.floor(currentAngle / sliceAngle);
+        if (currentPeg !== lastPeg) {
+          lastPeg = currentPeg;
+          const pitch = 460 - progress * 210;
+          playBeep(pitch, 'square', 0.025, 0.12);
+
+          // Pointer kick animation
+          pointer.style.transform = 'rotate(-10deg)';
+          setTimeout(() => {
+            pointer.style.transform = 'rotate(0deg)';
+          }, 32);
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          currentWheelRotation = targetRotation;
+          wheelCanvas.style.transform = `rotate(${currentWheelRotation}deg)`;
+          finishWheelSpin(winnerItem, noDuplicate);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function finishWheelSpin(winnerItem, noDuplicate) {
+      const spinBtn = document.getElementById('spinBtn');
+      const statusBadge = document.getElementById('wheelStatusBadge');
+      const statusText = document.getElementById('wheelStatusText');
+
+      spinBtn.disabled = false;
+      isSpinning = false;
+
+      // Update Live Status Badge with Winner
+      statusBadge.className = "comic-btn mt-3.5 sm:mt-4 bg-[#20B2AA] hover:bg-[#1BA39C] text-white border-[3.5px] border-[#1E1E24] px-7 sm:px-9 py-2.5 sm:py-3 rounded-full shadow-brutal text-center max-w-md transition-all flex items-center justify-center cursor-pointer select-none";
+      statusText.className = "font-comic italic text-base sm:text-lg md:text-xl text-white tracking-wider uppercase";
+      statusText.textContent = `TERPILIH: #${winnerItem.id} ${winnerItem.nama} – TEKAN UNTUK PUTAR LAGI`;
+
+      // Remove from pool if duplicate prevention is ON
+      if (noDuplicate) {
+        availablePool = availablePool.filter(id => id !== winnerItem.id);
+      }
+
+      // Add to History
+      const historyEntry = {
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        item: winnerItem
+      };
+      drawnHistory.unshift(historyEntry);
+
+      // Save State & Update Views
+      saveState();
+      drawWheel();
+      renderHistory();
+      updateRemainingIndicator();
+
+      // Trigger Confetti Celebration
+      fireCelebrationConfetti();
+
+      // Play Victory Fanfare
+      playFanfare();
+
+      // Open Result Modal after brief pause
+      setTimeout(() => {
+        openResultModal(winnerItem);
+      }, 350);
+    }
+
+    // CANVAS CONFETTI CELEBRATION
+    function fireCelebrationConfetti() {
+      if (typeof confetti !== 'function') return;
+
+      const colors = ['#F6C944', '#20B2AA', '#FF7A00', '#ffffff', '#FF4136'];
+
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 70,
+        origin: { x: 0.1, y: 0.7 },
+        colors: colors
+      });
+
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 70,
+        origin: { x: 0.9, y: 0.7 },
+        colors: colors
+      });
+
+      setTimeout(() => {
+        confetti({
+          particleCount: 80,
+          spread: 100,
+          origin: { y: 0.6 },
+          colors: colors
+        });
+      }, 200);
+    }
+
+    // UPDATE REMAINING CARD BADGE
+    function updateRemainingIndicator() {
+      const badge = document.getElementById('remainingBadge');
+      const count = availablePool.length;
+      badge.textContent = `Tersisa: ${count} / ${GACHA_ITEMS.length} Kartu`;
+
+      const modalPullAgainBtn = document.getElementById('modalPullAgainBtn');
+      const noDuplicate = document.getElementById('noDuplicateCheckbox').checked;
+
+      if (modalPullAgainBtn) {
+        if (noDuplicate && count === 0) {
+          modalPullAgainBtn.disabled = true;
+          modalPullAgainBtn.innerHTML = `Semua Kartu Terambil`;
+        } else {
+          modalPullAgainBtn.disabled = false;
+          modalPullAgainBtn.innerHTML = `Putar Lagi!`;
+        }
+      }
+    }
+
+    // RENDER HISTORY LIST
+    function renderHistory() {
+      const container = document.getElementById('historyListContainer');
+      if (!container) return;
+
+      const countBadge = document.getElementById('historyCountBadge');
+      if (countBadge) countBadge.textContent = drawnHistory.length;
+
+      if (drawnHistory.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-gray-500 font-bold bg-[#FAF8EF] rounded-2xl comic-border-sm border-dashed p-4">
+            <div class="text-3xl mb-1.5">🎡</div>
+            <p class="font-comic text-base text-gray-700">Belum ada kartu yang diundi</p>
+            <p class="text-xs text-gray-500 mt-1">Tekan tombol <span class="text-brandOrange font-black underline">PUTAR</span> di sebelah kiri untuk mengundi!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      drawnHistory.forEach((hist, index) => {
+        const card = document.createElement('div');
+        card.className = "bg-[#FFFDF5] comic-border-sm rounded-xl p-2.5 sm:p-3 shadow-brutal-sm space-y-1.5 hover:bg-yellow-50 transition";
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-brandYellow comic-border-sm flex items-center justify-center text-base shadow-brutal-sm flex-shrink-0">
+                ${hist.item.emoji}
+              </div>
+              <div class="min-w-0">
+                <span class="font-comic text-sm sm:text-base text-[#1E1E24] block truncate">
+                  #${hist.item.id} ${hist.item.nama}
+                </span>
+                <p class="text-[10px] font-bold text-gray-500 truncate">
+                  ${hist.item.ayat.split('-')[0]}
+                </p>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold text-gray-500 bg-yellow-100 px-2 py-0.5 rounded-full flex-shrink-0 comic-border-sm">
+              🕒 ${hist.timestamp}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-end gap-1.5 pt-1 border-t border-dashed border-gray-200">
+            <button 
+              onclick='downloadCardPNGById(${hist.item.id})' 
+              class="comic-btn text-xs font-black bg-brandOrange hover:bg-[#FF6A00] text-white px-2.5 py-1 rounded-lg comic-border-sm shadow-brutal-sm flex items-center gap-1"
+              title="Unduh Kartu PNG"
+            >
+              <span>📥</span> Unduh PNG
+            </button>
+            <button 
+              onclick='openResultModalById(${hist.item.id})' 
+              class="comic-btn text-xs font-black bg-brandTeal hover:bg-brandTealDark text-white px-2.5 py-1 rounded-lg comic-border-sm shadow-brutal-sm flex items-center gap-1"
+              title="Lihat Detail Kartu"
+            >
+              <span>🔍</span> Detail
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function escapeQuotes(str) {
+      return (str || '').replace(/"/g, '&quot;');
+    }
+
+    function openResultModalById(id) {
+      const item = GACHA_ITEMS.find(i => i.id === id);
+      if (item) {
+        openResultModal(item);
+      }
+    }
+
+    // OPEN RESULT MODAL POPUP
+    function openResultModal(item, participant = null) {
+      currentlyViewedItem = item;
+      currentlyViewedParticipant = participant;
+
+      document.getElementById('modalCardNumber').textContent = `KARTU #${item.id}`;
+      document.getElementById('modalCardEmoji').textContent = item.emoji;
+      document.getElementById('modalCardNama').textContent = item.nama;
+      document.getElementById('modalCardTema').textContent = `"${item.tema}"`;
+      document.getElementById('modalCardMakna').textContent = item.makna;
+      document.getElementById('modalCardAyat').textContent = item.ayat;
+      document.getElementById('modalCardHias').textContent = item.hias;
+
+      const participantBadge = document.getElementById('modalParticipantLabel');
+      if (participantBadge) {
+        participantBadge.classList.add('hidden');
+      }
+
+      // Handle Image
+      const imgElem = document.getElementById('modalCardImage');
+      const fallbackElem = document.getElementById('modalImageFallback');
+
+      imgElem.src = encodeURI(item.image);
+      imgElem.classList.remove('hidden');
+      fallbackElem.classList.add('hidden');
+
+      // Reset Download button text
+      const dlBtn = document.getElementById('modalDownloadBtn');
+      if (dlBtn) dlBtn.innerHTML = `<span>📥</span> Unduh Kartu (PNG)`;
+
+      // Show Modal
+      const modal = document.getElementById('resultModal');
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeResultModal() {
+      const modal = document.getElementById('resultModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function handleImageFallback(img) {
+      img.classList.add('hidden');
+      const fallback = document.getElementById('modalImageFallback');
+      if (fallback) fallback.classList.remove('hidden');
+    }
+
+    // OPEN ALL 10 CARDS CATALOG MODAL
+    function openCatalogModal() {
+      const modal = document.getElementById('catalogModal');
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCatalogModal() {
+      const modal = document.getElementById('catalogModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function renderCatalog() {
+      const catalogList = document.getElementById('catalogList');
+      catalogList.innerHTML = '';
+
+      GACHA_ITEMS.forEach(item => {
+        const itemCard = document.createElement('div');
+        itemCard.className = "bg-white comic-border-sm rounded-2xl p-4 shadow-brutal-sm space-y-2 flex flex-col justify-between";
+
+        itemCard.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between border-b-2 border-gray-200 pb-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">${item.emoji}</span>
+                <h4 class="font-comic text-xl text-[#1E1E24]">
+                  #${item.id} ${item.nama}
+                </h4>
+              </div>
+              <span class="bg-brandOrange text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                ${item.tema}
+              </span>
+            </div>
+
+            <!-- Thumbnail Image -->
+            <div class="rounded-xl overflow-hidden comic-border-sm mb-2 max-h-36 bg-amber-50 flex items-center justify-center">
+              <img 
+                src="${encodeURI(item.image)}" 
+                alt="${item.nama}" 
+                class="w-full h-32 object-cover" 
+                onerror="this.style.display='none'"
+              >
+            </div>
+
+            <p class="text-xs font-semibold text-gray-700 leading-relaxed mb-2">
+              <strong class="text-brandTealDark">Makna:</strong> ${item.makna}
+            </p>
+
+            <p class="text-xs font-bold text-gray-600 italic bg-yellow-50 p-2 rounded-lg comic-border-sm mb-2">
+              ${item.ayat}
+            </p>
+
+            <p class="text-xs font-semibold text-gray-800 bg-orange-50 p-2 rounded-lg comic-border-sm">
+              <strong class="text-brandOrange">Hias:</strong> ${item.hias}
+            </p>
+          </div>
+
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button 
+              onclick='downloadCardPNGById(${item.id}, null)' 
+              class="comic-btn text-xs font-black bg-brandOrange hover:bg-[#FF6A00] text-white px-3 py-1.5 rounded-lg comic-border-sm shadow-brutal-sm flex items-center gap-1"
+            >
+              <span>📥</span> Unduh PNG
+            </button>
+            <button 
+              onclick='closeCatalogModal(); openResultModalById(${item.id}, null);' 
+              class="comic-btn text-xs font-black bg-brandYellow hover:bg-yellow-300 text-[#1E1E24] px-3 py-1.5 rounded-lg comic-border-sm shadow-brutal-sm"
+            >
+              Detail 🔍
+            </button>
+          </div>
+        `;
+        catalogList.appendChild(itemCard);
+      });
+    }
+
+    // RESET ACTIONS
+    function confirmResetGacha() {
+      const confirmReset = confirm("Apakah kamu yakin ingin me-reset undian? Semua 10 bagian tubuh akan kembali ke dalam pool undian.");
+      if (confirmReset) {
+        resetPool(true);
+        drawWheel();
+        updateRemainingIndicator();
+        const statusBadge = document.getElementById('wheelStatusBadge');
+        const statusText = document.getElementById('wheelStatusText');
+        if (statusBadge && statusText) {
+          statusBadge.className = "comic-btn mt-3.5 sm:mt-4 bg-white hover:bg-yellow-50 text-[#1E1E24] border-[3.5px] border-[#1E1E24] px-7 sm:px-9 py-2.5 sm:py-3 rounded-full shadow-brutal text-center max-w-md transition-all flex items-center justify-center cursor-pointer select-none";
+          statusText.className = "font-comic italic text-base sm:text-lg md:text-xl text-[#1E1E24] tracking-wider uppercase";
+          statusText.textContent = "SIAP DIUNDI – TEKAN PUTAR!";
+        }
+        playBeep(350, 'sine', 0.15, 0.2);
+        alert("Undian berhasil di-reset! Semua 10 kartu siap diundi kembali.");
+      }
+    }
+
+    function confirmClearHistory() {
+      if (drawnHistory.length === 0) {
+        alert("Riwayat undian sudah kosong.");
+        return;
+      }
+      const confirmClear = confirm("Apakah kamu yakin ingin mengosongkan seluruh riwayat undian?");
+      if (confirmClear) {
+        drawnHistory = [];
+        saveState();
+        renderHistory();
+        playBeep(250, 'sine', 0.15, 0.2);
+      }
+    }
+
+    function shufflePoolNotification() {
+      for (let i = availablePool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availablePool[i], availablePool[j]] = [availablePool[j], availablePool[i]];
+      }
+      saveState();
+      drawWheel();
+      playBeep(520, 'triangle', 0.1, 0.2);
+      alert(`Pool undian berhasil diacak ulang! (${availablePool.length} kartu siap diundi)`);
+    }
+
+    // COPY HISTORY SUMMARY FOR PIC / EVENT RECORD
+    function copyHistorySummary() {
+      if (drawnHistory.length === 0) {
+        alert("Belum ada riwayat undian untuk disalin.");
+        return;
+      }
+
+      let summaryText = `*REKAP UNDIAN HIAS ROTI CG FUN WEEK 1 - TUBUH KRISTUS*\n`;
+      summaryText += `Tanggal: ${new Date().toLocaleDateString('id-ID')}\n`;
+      summaryText += `----------------------------------------\n`;
+
+      drawnHistory.forEach((h, i) => {
+        summaryText += `${i + 1}. #${h.item.id} ${h.item.nama} (${h.item.ayat.split('-')[0]})\n`;
+      });
+
+      summaryText += `----------------------------------------\n`;
+      summaryText += `Total tarikan: ${drawnHistory.length} kali`;
+
+      navigator.clipboard.writeText(summaryText).then(() => {
+        alert("Rekap riwayat berhasil disalin ke clipboard! Siap dipaste ke grup WhatsApp CG.");
+      }).catch(err => {
+        console.error("Gagal menyalin:", err);
+        prompt("Salin teks berikut secara manual:", summaryText);
+      });
+    }
+
+    // ========================================================
+    // DOWNLOAD RESULT CARD AS PNG (CLIENT-SIDE CANVAS EXPORT)
+    // ========================================================
+    function downloadCurrentCard() {
+      if (!currentlyViewedItem) return;
+      downloadCardPNG(currentlyViewedItem);
+    }
+
+    function downloadCardPNGById(id) {
+      const item = GACHA_ITEMS.find(i => i.id === id);
+      if (item) {
+        downloadCardPNG(item);
+      }
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let currentY = y;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line.trim(), x, currentY);
+          line = words[n] + ' ';
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, currentY);
+      return currentY + lineHeight;
+    }
+
+    async function downloadCardPNG(item, participant) {
+      const dlBtn = document.getElementById('modalDownloadBtn');
+      if (dlBtn) dlBtn.innerHTML = `<span>⏳</span> Menyiapkan Kartu...`;
+
+      try {
+        // Wait for web fonts if possible
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+
+        // Card Canvas dimensions: 840 x 1280 (High-res, crisp comic card)
+        const canvas = document.createElement('canvas');
+        canvas.width = 840;
+        canvas.height = 1280;
+        const ctx = canvas.getContext('2d');
+
+        // 1. BACKGROUND WITH COMIC DOT PATTERN
+        ctx.fillStyle = '#FDF8E2';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Subtle comic dots
+        ctx.fillStyle = 'rgba(30, 30, 36, 0.08)';
+        for (let dx = 12; dx < canvas.width; dx += 24) {
+          for (let dy = 12; dy < canvas.height; dy += 24) {
+            ctx.beginPath();
+            ctx.arc(dx, dy, 1.8, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        }
+
+        // 2. MAIN CARD BOARD (NEOBRUTALIST STYLE)
+        const cardX = 28;
+        const cardY = 28;
+        const cardW = 784;
+        const cardH = 1224;
+        const cardR = 26;
+
+        // Neobrutalist drop shadow
+        ctx.fillStyle = '#1E1E24';
+        roundRect(ctx, cardX + 10, cardY + 10, cardW, cardH, cardR);
+        ctx.fill();
+
+        // Main card body
+        ctx.fillStyle = '#FFFBEA';
+        roundRect(ctx, cardX, cardY, cardW, cardH, cardR);
+        ctx.fill();
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+
+        // 3. HEADER BANNER
+        const bannerY = 56;
+        // Brand Yellow Banner
+        roundRect(ctx, 54, bannerY, 732, 60, 16);
+        ctx.fillStyle = '#F6C944';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+
+        // Banner Text
+        ctx.font = 'bold 30px "Bangers", cursive, sans-serif';
+        ctx.fillStyle = '#FF7A00';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('★ CG FUN 2026 ★', 74, bannerY + 30);
+
+        ctx.font = 'bold 18px "Fredoka", "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = '#1E1E24';
+        ctx.textAlign = 'right';
+        ctx.fillText('TUBUH KRISTUS — WEEK 1', 766, bannerY + 30);
+
+        // Participant tag if present
+        let currentHeaderY = bannerY + 76;
+        if (participant) {
+          ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+          const pText = `👤 Peserta: ${participant}`;
+          const pWidth = ctx.measureText(pText).width + 24;
+          roundRect(ctx, 54, currentHeaderY, pWidth, 28, 8);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#1E1E24';
+          ctx.stroke();
+          ctx.fillStyle = '#1E1E24';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pText, 66, currentHeaderY + 14);
+          currentHeaderY += 36;
+        }
+
+        // 4. CARD TITLE & EMOJI
+        // Card Number Badge
+        roundRect(ctx, 54, currentHeaderY, 120, 32, 16);
+        ctx.fillStyle = '#20B2AA';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+        ctx.font = 'bold 15px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`KARTU #${item.id}`, 114, currentHeaderY + 16);
+
+        // Title: Emoji + Body Part Name
+        ctx.font = 'bold 44px "Bangers", cursive, sans-serif';
+        ctx.fillStyle = '#1E1E24';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${item.emoji} ${item.nama}`, 186, currentHeaderY + 16);
+
+        // Theme Tag (Orange Pill)
+        const themeText = `"${item.tema}"`;
+        ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+        const themeW = ctx.measureText(themeText).width + 28;
+        roundRect(ctx, 786 - themeW, currentHeaderY, themeW, 32, 12);
+        ctx.fillStyle = '#FF7A00';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.fillText(themeText, 786 - themeW / 2, currentHeaderY + 16);
+
+        // 5. PICTURE FRAME & IMAGE RENDERING
+        const imgBoxX = 54;
+        const imgBoxY = currentHeaderY + 44;
+        const imgBoxW = 732;
+        const imgBoxH = 390;
+
+        // Image container box
+        ctx.fillStyle = '#1E1E24';
+        roundRect(ctx, imgBoxX + 6, imgBoxY + 6, imgBoxW, imgBoxH, 18);
+        ctx.fill();
+        ctx.fillStyle = '#FFF8E8';
+        roundRect(ctx, imgBoxX, imgBoxY, imgBoxW, imgBoxH, 18);
+        ctx.fill();
+        ctx.lineWidth = 4.5;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+
+        // Load image (Prefer pre-optimized base64 if available, fallback to image path)
+        const imgSrc = (typeof CARD_IMAGES_B64 !== 'undefined' && CARD_IMAGES_B64[item.id])
+          ? CARD_IMAGES_B64[item.id]
+          : item.image;
+
+        await new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            ctx.save();
+            roundRect(ctx, imgBoxX + 3, imgBoxY + 3, imgBoxW - 6, imgBoxH - 6, 15);
+            ctx.clip();
+
+            // Cover fit
+            const hRatio = (imgBoxW - 6) / img.width;
+            const vRatio = (imgBoxH - 6) / img.height;
+            const ratio = Math.max(hRatio, vRatio);
+            const centerShiftX = (imgBoxW - 6 - img.width * ratio) / 2;
+            const centerShiftY = (imgBoxH - 6 - img.height * ratio) / 2;
+
+            ctx.drawImage(
+              img,
+              0, 0, img.width, img.height,
+              imgBoxX + 3 + centerShiftX,
+              imgBoxY + 3 + centerShiftY,
+              img.width * ratio,
+              img.height * ratio
+            );
+            ctx.restore();
+            resolve();
+          };
+          img.onerror = () => {
+            // Fallback placeholder if image load fails
+            ctx.font = '60px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍞', imgBoxX + imgBoxW / 2, imgBoxY + imgBoxH / 2 - 20);
+            ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#1E1E24';
+            ctx.fillText('Foto Hias Roti CG Fun', imgBoxX + imgBoxW / 2, imgBoxY + imgBoxH / 2 + 30);
+            resolve();
+          };
+          img.src = imgSrc;
+        });
+
+        // 6. AYAT FIRMAN BOX (PROMINENT, CLEAR, UNCLIPPED)
+        const ayatBoxX = 54;
+        const ayatBoxY = imgBoxY + imgBoxH + 20;
+        const ayatBoxW = 732;
+        const ayatBoxH = 175;
+
+        // Neobrutalist shadow
+        ctx.fillStyle = '#1E1E24';
+        roundRect(ctx, ayatBoxX + 5, ayatBoxY + 5, ayatBoxW, ayatBoxH, 16);
+        ctx.fill();
+
+        // Box surface
+        ctx.fillStyle = '#FFF9D2';
+        roundRect(ctx, ayatBoxX, ayatBoxY, ayatBoxW, ayatBoxH, 16);
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+
+        // Left Orange Accent Stripe
+        ctx.save();
+        roundRect(ctx, ayatBoxX, ayatBoxY, ayatBoxW, ayatBoxH, 16);
+        ctx.clip();
+        ctx.fillStyle = '#FF7A00';
+        ctx.fillRect(ayatBoxX, ayatBoxY, 14, ayatBoxH);
+        ctx.restore();
+
+        // Header: AYAT FIRMAN
+        ctx.font = 'bold 22px "Bangers", cursive, sans-serif';
+        ctx.fillStyle = '#FF7A00';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('📖 AYAT FIRMAN:', ayatBoxX + 28, ayatBoxY + 16);
+
+        // Verse Text (Word-wrapped, clear and unclipped)
+        ctx.font = 'italic bold 21px "Plus Jakarta Sans", "Fredoka", sans-serif';
+        ctx.fillStyle = '#1E1E24';
+        wrapText(ctx, `"${item.ayat}"`, ayatBoxX + 28, ayatBoxY + 48, ayatBoxW - 48, 30);
+
+        // 7. MAKNA ROHANI BOX
+        const maknaBoxX = 54;
+        const maknaBoxY = ayatBoxY + ayatBoxH + 18;
+        const maknaBoxW = 732;
+        const maknaBoxH = 160;
+
+        // Neobrutalist shadow
+        ctx.fillStyle = '#1E1E24';
+        roundRect(ctx, maknaBoxX + 5, maknaBoxY + 5, maknaBoxW, maknaBoxH, 16);
+        ctx.fill();
+
+        // Box surface
+        ctx.fillStyle = '#20B2AA';
+        roundRect(ctx, maknaBoxX, maknaBoxY, maknaBoxW, maknaBoxH, 16);
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+
+        // Header: MAKNA ROHANI
+        ctx.font = 'bold 22px "Bangers", cursive, sans-serif';
+        ctx.fillStyle = '#F6C944';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('💡 MAKNA ROHANI:', maknaBoxX + 24, maknaBoxY + 16);
+
+        // Makna Text (Word-wrapped)
+        ctx.font = 'bold 18px "Plus Jakarta Sans", "Fredoka", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        wrapText(ctx, item.makna, maknaBoxX + 24, maknaBoxY + 46, maknaBoxW - 44, 27);
+
+        // 8. PETUNJUK HIAS ROTI (COMPACT BOX)
+        const hiasBoxX = 54;
+        const hiasBoxY = maknaBoxY + maknaBoxH + 18;
+        const hiasBoxW = 732;
+        const hiasBoxH = 155;
+
+        // Box surface
+        ctx.fillStyle = '#FFF0E5';
+        roundRect(ctx, hiasBoxX, hiasBoxY, hiasBoxW, hiasBoxH, 14);
+        ctx.fill();
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#1E1E24';
+        ctx.stroke();
+
+        // Header: PETUNJUK HIAS
+        ctx.font = 'bold 19px "Bangers", cursive, sans-serif';
+        ctx.fillStyle = '#FF7A00';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('🎨 PETUNJUK HIAS ROTI:', hiasBoxX + 20, hiasBoxY + 14);
+
+        // Hias Text
+        ctx.font = 'bold 16px "Plus Jakarta Sans", "Fredoka", sans-serif';
+        ctx.fillStyle = '#1E1E24';
+        wrapText(ctx, item.hias, hiasBoxX + 20, hiasBoxY + 40, hiasBoxW - 40, 24);
+
+        // 9. FOOTER
+        ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = '#9CA3AF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('CG FUN WEEK 1 • AKTIVITAS KREATIF HIAS ROTI "TUBUH KRISTUS"', canvas.width / 2, cardY + cardH - 14);
+
+        // 10. EXPORT CANVAS TO PNG & TRIGGER DOWNLOAD
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            alert("Gagal memproses gambar PNG kartu.");
+            if (dlBtn) dlBtn.innerHTML = `<span>📥</span> Unduh Kartu (PNG)`;
+            return;
+          }
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          const safeName = item.nama.replace(/[\/\\?%*:|"<>]/g, '-').replace(/\s+/g, '-');
+          a.download = `CG-Fun-Week1-Kartu-${item.id}-${safeName}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl);
+
+          if (dlBtn) dlBtn.innerHTML = `<span>✅</span> Berhasil Diunduh!`;
+          playBeep(640, 'triangle', 0.12, 0.2);
+
+          setTimeout(() => {
+            if (dlBtn) dlBtn.innerHTML = `<span>📥</span> Unduh Kartu (PNG)`;
+          }, 2000);
+        }, 'image/png');
+
+      } catch (err) {
+        console.error("Gagal membuat PNG kartu:", err);
+        alert("Terjadi kendala saat mengunduh gambar kartu: " + err.message);
+        if (dlBtn) dlBtn.innerHTML = `<span>📥</span> Unduh Kartu (PNG)`;
+      }
+    }
+
+    // Close modals on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeResultModal();
+        closeCatalogModal();
+      }
+    });
+  </script>
+</body>
+
+</html>
